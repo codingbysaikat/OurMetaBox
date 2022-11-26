@@ -16,12 +16,12 @@
  */
 
  class ourmeta{
-    function __construct(){
+  public  function __construct(){
         add_action('plugin_loaded', array($this,'umbox_text_domin_load'));
         add_action('admin_menu', array($this,'umbox_post_metabox'));
         add_action( 'save_post', array( $this, 'umbox_save_post_location'));
     }
-    function umbox_save_post_location($post_id){
+    public function umbox_save_post_location($post_id){
         $location = isset($_POST['umbox_loaction'])?$_POST['umbox_loaction']:'';
         if($location == ''){
             return $post_id;
@@ -30,7 +30,7 @@
         
 
     }
-    function umbox_post_metabox(){
+    public  function umbox_post_metabox(){
         add_meta_box(
             'umbox_post_location',
             __('Location Info','umbox'),
@@ -41,7 +41,7 @@
 
         );
     }
-    function umbox_display_loaction($post){
+    public  function umbox_display_loaction($post){
         $location = get_post_meta($post->ID,'umbox_loaction',true);
         $label = __('OUR LOCATION','umbox');
         $meta_input = <<<EOD
@@ -55,7 +55,7 @@
        echo $meta_input;
     }
 
-    function umbox_text_domin_load(){
+    public function umbox_text_domin_load(){
         load_plugin_textdomain('umbox',false, dirname(__FILE__ . 'languages'));
 
 
