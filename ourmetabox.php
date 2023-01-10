@@ -16,22 +16,19 @@
  * Domain Path:       /languages 
  */
 
-class ourmeta
-{
-    public  function __construct()
-    {
+class ourmeta{
+    public  function __construct(){
         add_action('plugin_loaded', array($this, 'umbox_text_domin_load'));
         add_action('admin_menu', array($this, 'umbox_post_metabox'));
+        add_action('save_post', array($this, 'umbox_image_post_metabox'));
         add_action('save_post', array($this, 'umbox_save_post_location'));
         add_action('admin_enqueue_scripts', array($this, 'umbx_admin_scripts'));
     }
-    public function umbx_admin_scripts()
-    {
+    public function umbx_admin_scripts(){
         wp_enqueue_style('meta-box-css', plugin_dir_url(__FILE__) . 'assets/admin/style.css');
         wp_enqueue_script('my-script-js', plugin_dir_url(__FILE__) . 'assets/admin/script.js', 'jQuery', time(), true);
     }
-    private function is_secured($nonce_field, $action, $post_id)
-    {
+    private function is_secured($nonce_field, $action, $post_id){
         $nonce = isset($_POST[$nonce_field]) ? $_POST[$nonce_field] : '';
 
         if ($nonce == '') {
@@ -51,8 +48,20 @@ class ourmeta
         }
         return true;
     }
-    public function umbox_save_post_location($post_id)
-    {
+    public function umbox_image_post_metabox($post_id){
+        if (!$this->is_secured('umbox_post_image_field', 'umbox_image_loaction', $post_id)) {
+            return $post_id;
+        }
+    
+        $save_image_id = esc_attr(isset($_POST['image_id'])?$_POST['image_id']:'');
+        update_post_meta($post_id,'image_id', $save_image_id );
+        $save_image_url = esc_attr(isset($_POST['image_url'])?$_POST['image_url']:'');
+        update_post_meta($post_id,'image_url', $save_image_url);
+
+
+    }
+    
+    public function umbox_save_post_location($post_id){
         if (!$this->is_secured('umbox_location_field', 'umbox_loaction', $post_id)) {
             return $post_id;
         }
@@ -73,8 +82,7 @@ class ourmeta
         update_post_meta($post_id, 'umbox_checkbox', $fovarite);
         update_post_meta($post_id, 'omb_clr', $colors);
     }
-    public  function umbox_post_metabox()
-    {
+    public  function umbox_post_metabox(){
         add_meta_box(
             'umbox_post_location',
             __('Location Info', 'umbox'),
@@ -92,18 +100,21 @@ class ourmeta
             'side'
         );
     }
-    public function umbox_image_media(){
-        $umbox_field_label = __('Image');
+    public function umbox_image_media($post){
+        $image_url = get_post_meta($post->ID,'image_url',true);
+        $image_id = get_post_meta($post->ID,'image_id',true);
+        $umbx_field_label = __('Image');
         $umbx_image_name = __('Upload Image');
+        wp_nonce_field('umbox_image_loaction', 'umbox_post_image_field');
         $media_html = <<< EOD
     <div class= 'fields'>
     <div class= 'fields_c'>
-    <label>{$umbox_field_label}</label>
+    <label>{$umbx_field_label}</label>
     <div class= 'input_c'>
     <button class='btn' id='upload_image'>{$umbx_image_name} </button>
     </div class='image_fields'>
-    <input type='hidden' name='image_id' id='image_id'>
-    <input type='hidden' name='image_url' id='image_url'>
+    <input type='hidden' name='image_id' id='image_id' value= "{$image_id}">
+    <input type='hidden' name='image_url' id='image_url' value="{$image_url}">
     <div class='attach_image'>
     <div>
     </div>
